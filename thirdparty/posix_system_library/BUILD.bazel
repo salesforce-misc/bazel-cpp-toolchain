@@ -1,0 +1,16 @@
+load("//thirdparty/posix_system_library:posix_library_wrapper.bzl", "posix_library_wrapper")
+
+posix_library_wrapper(
+    name = "math_library",
+    link_flag = "-lm",
+)
+
+posix_library_wrapper(
+    name = "pthread_library",
+    link_flag = "-pthread",
+)
+
+posix_library_wrapper(
+    name = "dynamic_loader",
+    link_flag = "-ldl",
+)

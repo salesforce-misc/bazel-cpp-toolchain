@@ -1,0 +1,59 @@
+filegroup(
+    name = "all_files",
+    srcs = glob(["**/*"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "libraries",
+    srcs = glob(["usr/lib/**/*.dylib"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "ld",
+    srcs = ["usr/bin/ld"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "strip",
+    srcs = ["usr/bin/strip"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "install_name_tool",
+    srcs = ["usr/bin/install_name_tool"],
+    visibility = ["//visibility:public"],
+)
+
+# We need a separate filegroup for the
+# binary such that it can be reused
+# in rule attributes that are restricted
+# to a single file
+filegroup(
+    name = "dsymutil_binary",
+    srcs = ["usr/bin/dsymutil"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "dsymutil_additional_libraries",
+    srcs = [":libraries"],
+    visibility = ["//visibility:public"],
+)
+
+# We need a separate filegroup for the
+# binary such that it can be reused
+# in rule attributes that are restricted
+# to a single file
+filegroup(
+    name = "otool",
+    srcs = ["usr/bin/llvm-otool"],
+    data = [
+        "usr/bin/llvm-objdump",
+        ":libraries",
+    ],
+    visibility = ["//visibility:public"],
+)

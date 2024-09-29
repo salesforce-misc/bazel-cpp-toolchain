@@ -1,0 +1,36 @@
+# General Bazel config
+common --noenable_bzlmod
+common --enable_platform_specific_config
+
+# Configurations related to C++ compilation
+build --incompatible_enable_cc_toolchain_resolution
+
+# Enable the `force_pic` build variable.
+# This indicates that position-independent code (PIC) and position-independent executables (PIE) should be generated.
+build --force_pic
+# Enable fission by default on Linux and always download dwo files
+build:linux --fission=yes --experimental_remote_download_regex=.*\.dwo
+
+# Use a platform specific crosstool top to prevent failures like.
+# '@local_config_cc//:toolchain' does not contain a toolchain for cpu 'k8|darwin|windows_64'.
+# This is a temporary workaround until the legacy crosstool has been removed entirely from Bazel.
+build --crosstool_top="//toolchain:clang_toolchain_suite"
+build --platform_mappings=toolchain/platforms/platform_mappings
+build --experimental_output_directory_naming_scheme=diff_against_baseline
+
+# Add a sanitizers flag to the build so we can skip targets that are not compatible with sanitizers
+build:sanitizer --//bazel/settings:sanitizer --config=slow_lane
+
+# Create a config for common Sanitizer flags, ASAN and UBSAN work well together so they are enabled together
+build:ub-asan --features=address_sanitizer --features=undefined_behavior_sanitizer --config=sanitizer --platform_suffix=ub-asan
+build:tsan --features=thread_sanitizer --config=sanitizer --platform_suffix=tsan
+build:msan --features=memory_sanitizer --config=sanitizer --platform_suffix=msan
+
+# These are OS specific and do not hurt anything in unsanitized runs. Sadly, each of the sanitizers requires their own settings.
+# The env should apply to both run & build as run inherits from build
+build:linux --action_env=ASAN_SYMBOLIZER_PATH=./external/clang_linux/bin/llvm-symbolizer --action_env=MSAN_SYMBOLIZER_PATH=./external/clang_linux/bin/llvm-symbolizer --action_env=TSAN_OPTIONS=external_symbolizer_path=./external/clang_linux/bin/llvm-symbolizer
+build:macos --action_env=ASAN_SYMBOLIZER_PATH=./external/clang_darwin/bin/llvm-symbolizer --action_env=MSAN_SYMBOLIZER_PATH=./external/clang_darwin/bin/llvm-symbolizer --action_env=TSAN_OPTIONS=external_symbolizer_path=./external/clang_darwin/bin/llvm-symbolizer
+
+# Build fuzzers with sanitizers
+build:fuzzer --config=ub-asan
+build:fuzzer --features=fuzzer-no-link

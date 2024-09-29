@@ -1,0 +1,29 @@
+load("//toolchain/tests/sanitizers:sanitizer_test.bzl", "sanitizer_test")
+
+# Expected output example
+# ==================
+# Without the ASAN symbolizer or proper symbols the stacks do not contain funciton information:
+#       #0 0x2f4867  (bazel/bazel_user_root/fff4f35a9591257e13578c09f3d662aa/execroot/__main__/bazel-out/k8-fastbuild/bin/bazel/toolchain/tests/address_sanitizer_stack_trace/address_sanitizer_overflow+0x2f4867)
+#       #1 0x2f493d  (bazel/bazel_user_root/fff4f35a9591257e13578c09f3d662aa/execroot/__main__/bazel-out/k8-fastbuild/bin/bazel/toolchain/tests/address_sanitizer_stack_trace/address_sanitizer_overflow+0x2f493d)
+#
+# With the ASAN symbolizer and proper symbols we see this:
+#       #0 0x2f4867 in overflow(int) (bazel/bazel_user_root/fff4f35a9591257e13578c09f3d662aa/execroot/__main__/bazel-out/k8-fastbuild/bin/bazel/toolchain/tests/address_sanitizer_stack_trace/address_sanitizer_overflow+0x2f4867)
+#       #1 0x2f493d in main (bazel/bazel_user_root/fff4f35a9591257e13578c09f3d662aa/execroot/__main__/bazel-out/k8-fastbuild/bin/bazel/toolchain/tests/address_sanitizer_stack_trace/address_sanitizer_overflow+0x2f493d)
+sanitizer_test(
+    name = "address",
+    executable_cpp_sources = ["intentional_overflow.cpp"],
+    expected_errors = [
+        "#0\\ 0[xX][0-9a-fA-F]+\\ in\\ overflow\\(int\\)",
+        "#1\\ 0[xX][0-9a-fA-F]+\\ in main",
+    ],
+    # Specifically exclude other sanitizers so this test works with all targets and those configs
+    # However, UB and ASAN should work together
+    sanitizers =
+        [
+            "address_sanitizer",
+            "undefined_behavior_sanitizer",
+            "-memory_sanitizer",
+            "-thread_sanitizer",
+        ],
+    target_compatible_with = ["@//toolchain/platforms:is_posix"],
+)

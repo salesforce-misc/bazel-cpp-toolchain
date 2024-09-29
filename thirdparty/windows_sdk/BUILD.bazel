@@ -1,0 +1,194 @@
+filegroup(
+    name = "all_files",
+    srcs = glob(["**/*"]),
+    visibility = ["//visibility:public"],
+)
+
+# The Universal CRT (UCRT) contains the functions and globals exported by
+# the standard C99 C Run-time Library (CRT) library
+
+# Static universal c runtime.
+# It corresponds to the /MT compiler flag
+filegroup(
+    name = "no_debug_static_ucrt",
+    srcs = ["Lib/ucrt/x64/libucrt.lib"],
+    visibility = ["//visibility:public"],
+)
+
+# Debug version of the static universal c runtime.
+# It corresponds to the /MTd compiler flag
+filegroup(
+    name = "debug_static_ucrt",
+    srcs = ["Lib/ucrt/x64/libucrtd.lib"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "windows_sdk_shared_headers",
+    srcs = glob(["Include/shared/**/*"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "windows_sdk_ucrt_headers",
+    srcs = glob(["Include/ucrt/**/*"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "windows_sdk_um_headers",
+    srcs = glob(["Include/um/**/*"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "windows_sdk_winrt_headers",
+    srcs = glob(["Include/winrt/**/*"]),
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "Ws2_32",
+    # The file is actually WS2_32.LIB however bazel does not recognize the file ending .LIB but only .lib
+    interface_library = "Lib/um/x64/WS2_32.lib",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "WSock32",
+    # The file is actually WSock32.Lib however bazel does not recognize the file ending .Lib but only .lib
+    interface_library = "Lib/um/x64/WSock32.lib",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "PowrProf",
+    interface_library = "Lib/um/x64/PowrProf.lib",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "DbgHelp",
+    interface_library = "Lib/um/x64/DbgHelp.lib",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "Iphlp",
+    interface_library = "Lib/um/x64/Iphlpapi.lib",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "Crypt",
+    interface_library = "Lib/um/x64/Crypt32.lib",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "BCrypt",
+    interface_library = "Lib/um/x64/bcrypt.lib",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "Shlwapi",
+    interface_library = "Lib/um/x64/Shlwapi.lib",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "Winmm",
+    interface_library = "Lib/um/x64/Winmm.lib",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "Version",
+    interface_library = "Lib/um/x64/Version.lib",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "Pdh",
+    interface_library = "Lib/um/x64/Pdh.lib",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "windows_api",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":advapi32_interface_library",
+        ":gdi32_interface_library",
+        ":kernel32_interface_library",
+        ":ole32_interface_library",
+        ":runtimeobject_library",
+        ":secur32_interface_library",
+        ":shell32_interface_library",
+        ":user32_interface_library",
+    ],
+)
+
+cc_import(
+    name = "kernel32_interface_library",
+    # The file is actually kernel32.Lib however bazel does not recognize the file ending .LIB but only .lib
+    interface_library = "Lib/um/x64/kernel32.lib",
+    system_provided = True,
+)
+
+cc_import(
+    name = "advapi32_interface_library",
+    # The file is actually advapi32.Lib however bazel does not recognize the file ending .LIB but only .lib
+    interface_library = "Lib/um/x64/advapi32.lib",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "user32_interface_library",
+    interface_library = "Lib/um/x64/user32.lib",
+    system_provided = True,
+)
+
+cc_import(
+    name = "gdi32_interface_library",
+    interface_library = "Lib/um/x64/gdi32.lib",
+    system_provided = True,
+)
+
+cc_import(
+    name = "ole32_interface_library",
+    interface_library = "Lib/um/x64/ole32.lib",
+    system_provided = True,
+)
+
+cc_import(
+    name = "shell32_interface_library",
+    interface_library = "Lib/um/x64/Shell32.lib",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "secur32_interface_library",
+    interface_library = "Lib/um/x64/Secur32.lib",
+    system_provided = True,
+)
+
+cc_import(
+    name = "runtimeobject_library",
+    interface_library = "Lib/um/x64/runtimeobject.lib",
+    system_provided = True,
+)

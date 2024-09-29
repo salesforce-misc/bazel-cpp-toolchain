@@ -1,0 +1,25 @@
+platforms:
+  //toolchain/platforms:macos_x64
+    --cpu=darwin
+
+  //toolchain/platforms:macos_arm
+    --cpu=darwin_aarch64
+
+  //toolchain/platforms:linux_x64
+    --cpu=k8
+
+  //toolchain/platforms:windows_x64
+    --cpu=x64_windows
+
+flags:
+  --cpu=darwin
+    //toolchain/platforms:macos_x64
+
+  --cpu=darwin_aarch64
+    //toolchain/platforms:macos_arm
+
+  --cpu=k8
+    //toolchain/platforms:linux_x64
+
+  --cpu=x64_windows
+    //toolchain/platforms:windows_x64

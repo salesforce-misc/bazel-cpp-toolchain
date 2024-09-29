@@ -1,0 +1,120 @@
+"Architecture and Operating Systen conditions and target definitions (used with --platform)"
+
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("//toolchain/platforms:platform_with_config_setting.bzl", "platform_with_config_setting")
+# If you want to use the os+arch platform defines in selects, use the "is_<>" config settings created by the macro
+
+package(default_visibility = ["//visibility:public"])
+
+package_variables(
+    name = "default_zip_variables",
+    substitutions =
+        select({
+            "//bazel/platforms:is_windows_x64": {
+                "os": "windows",
+                "architecture": "x86_64",
+            },
+            "//bazel/platforms:is_linux_x64": {
+                "os": "linux",
+                "architecture": "x86_64",
+            },
+            "//bazel/platforms:is_macos_x64": {
+                "os": "macos",
+                "architecture": "x86_64",
+            },
+            "//bazel/platforms:is_macos_arm": {
+                "os": "macos",
+                "architecture": "arm64",
+            },
+        }) |
+        select({
+            "//bazel/conditions:compilation_mode_opt": {
+                "build_type": "release",
+            },
+            "//conditions:default": {
+                "build_type": "debug",
+            },
+        }),
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "is_windows",
+    actual = "@platforms//os:windows",
+)
+
+alias(
+    name = "is_linux",
+    actual = "@platforms//os:linux",
+)
+
+alias(
+    name = "is_macos",
+    actual = "@platforms//os:macos",
+)
+
+alias(
+    name = "is_arm",
+    actual = "@platforms//cpu:aarch64",
+)
+
+alias(
+    name = "is_x64",
+    actual = "@platforms//cpu:x86_64",
+)
+
+selects.config_setting_group(
+    name = "is_posix",
+    match_any = [
+        ":is_linux",
+        ":is_macos",
+    ],
+)
+
+platform_with_config_setting(
+    name = "linux_x64",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+platform_with_config_setting(
+    name = "linux_arm",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+)
+
+platform_with_config_setting(
+    name = "windows_x64",
+    constraint_values = [
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+platform_with_config_setting(
+    name = "windows_arm",
+    constraint_values = [
+        "@platforms//os:windows",
+        "@platforms//cpu:aarch64",
+    ],
+)
+
+platform_with_config_setting(
+    name = "macos_x64",
+    constraint_values = [
+        "@platforms//os:macos",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+platform_with_config_setting(
+    name = "macos_arm",
+    constraint_values = [
+        "@platforms//os:macos",
+        "@platforms//cpu:aarch64",
+    ],
+)

@@ -1,0 +1,18 @@
+load(":tests/condition_helpers_tests.bzl", "condition_helpers_test_suite")
+load(":tests/file_helpers_tests.bzl", "file_helpers_test_suite")
+load(":tests/function_helpers_tests.bzl", "function_helpers_test_suite")
+load(":tests/label_helpers_tests.bzl", "label_helpers_test_suite")
+load(":tests/list_helpers_tests.bzl", "list_helpers_test_suite")
+load(":tests/runfiles_helpers_test.bzl", "runfiles_helpers_test_suite")
+
+file_helpers_test_suite()
+
+label_helpers_test_suite()
+
+condition_helpers_test_suite()
+
+list_helpers_test_suite()
+
+runfiles_helpers_test_suite()
+
+function_helpers_test_suite()

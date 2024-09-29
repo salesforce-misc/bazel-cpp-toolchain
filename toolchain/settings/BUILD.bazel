@@ -1,0 +1,22 @@
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
+
+# The right way to react on user-input on the command line is to use Starlark configurations:
+# Starlark configurations are basically rules that can react on user input on the command line (arbitrary values).
+# These values can be set from the command line with `--//label/path:name=xyz`.
+# The Skylib provides rules for basic settings like bools, integers and strings that don't require conplex logic.
+# With `config_setting` a specific configuration value can be mapped to a condition to be used in `select`.
+
+# See these wiki pages for details:
+# https://docs.bazel.build/versions/master/configurable-attributes.html
+# https://docs.bazel.build/versions/master/skylark/config.html
+
+bool_flag(
+    name = "sanitizer",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "is_sanitizer",
+    flag_values = {":sanitizer": "True"},
+    visibility = ["//visibility:public"],
+)

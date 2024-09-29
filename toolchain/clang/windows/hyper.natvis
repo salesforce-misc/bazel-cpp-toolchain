@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+<!-- STL -->
+<!-- Background to broken std::string/std::deque visualizer: Currently, you only get the raw view which means that you have to unfold 5
+levels of nodes until you see the actual content of a string. Although we would have correct rules for our library
+provided by Microsoft, the whole rule becomes disabled, since Visual Studio misses just a single symbol. Unfortunately,
+clang pdbs lack the information about static members and the std::string rule uses them. I fixed the original rule such
+that it doesn't require the static members any more. -->
+   <Type Name="std::basic_string&lt;char,*&gt;">
+    <Intrinsic Name="size" Expression="_Mypair._Myval2._Mysize" />
+    <Intrinsic Name="capacity" Expression="_Mypair._Myval2._Myres" />
+    <DisplayString Condition="capacity() &lt; sizeof(_Mypair._Myval2._Bx._Buf)">{_Mypair._Myval2._Bx._Buf,na}</DisplayString>
+    <DisplayString Condition="capacity() &gt;= sizeof(_Mypair._Myval2._Bx._Buf)">{_Mypair._Myval2._Bx._Ptr,na}</DisplayString>
+    <StringView Condition="capacity() &lt; sizeof(_Mypair._Myval2._Bx._Buf)">_Mypair._Myval2._Bx._Buf,na</StringView>
+    <StringView Condition="capacity() &gt;= sizeof(_Mypair._Myval2._Bx._Buf)">_Mypair._Myval2._Bx._Ptr,na</StringView>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">size()</Item>
+      <Item Name="[capacity]" ExcludeView="simple">capacity()</Item>
+      <Item Name="[allocator]" ExcludeView="simple">_Mypair</Item>
+      <ArrayItems>
+        <Size>_Mypair._Myval2._Mysize</Size>
+        <ValuePointer Condition="capacity() &lt; sizeof(_Mypair._Myval2._Bx._Buf)">_Mypair._Myval2._Bx._Buf</ValuePointer>
+        <ValuePointer Condition="capacity() &gt;= sizeof(_Mypair._Myval2._Bx._Buf)">_Mypair._Myval2._Bx._Ptr</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::deque&lt;*&gt;">
+    <DisplayString>{{ size={_Mypair._Myval2._Mysize} }}</DisplayString>
+    <Expand>
+      <Item Name="[allocator]" ExcludeView="simple">_Mypair</Item>
+      <IndexListItems>
+        <Size>_Mypair._Myval2._Mysize</Size>
+        <ValueNode>_Mypair._Myval2._Map[(($i + _Mypair._Myval2._Myoff) / (sizeof(**_Mypair._Myval2._Map) &lt;= 1 ? 16 : sizeof (**_Mypair._Myval2._Map) &lt;= 2 ? 8 : sizeof (**_Mypair._Myval2._Map) &lt;= 4 ? 4 : sizeof(**_Mypair._Myval2._Map) &lt;= 8 ? 2 : 1)) % _Mypair._Myval2._Mapsize][($i + _Mypair._Myval2._Myoff) % (sizeof(**_Mypair._Myval2._Map) &lt;= 1 ? 16 : sizeof (**_Mypair._Myval2._Map) &lt;= 2 ? 8 : sizeof (**_Mypair._Myval2._Map) &lt;= 4 ? 4 : sizeof(**_Mypair._Myval2._Map) &lt;= 8 ? 2 : 1)]</ValueNode>
+      </IndexListItems>
+    </Expand>
+  </Type>
+
+  <!-- VC 2015 -->
+  <Type Name="std::list&lt;*&gt;">
+      <DisplayString>{{ size={_Mypair._Myval2._Mysize} }}</DisplayString>
+      <Expand>
+          <Item Name="[allocator]" ExcludeView="simple">_Mypair</Item>
+          <LinkedListItems>
+              <Size>_Mypair._Myval2._Mysize</Size>
+              <HeadPointer>_Mypair._Myval2._Myhead</HeadPointer>
+              <NextPointer>_Next</NextPointer>
+              <ValueNode>_Myval</ValueNode>
+          </LinkedListItems>
+      </Expand>
+  </Type>
+
+  <Type Name="std::_List_iterator&lt;*&gt;">
+      <AlternativeType Name="std::_List_const_iterator&lt;*&gt;" />
+      <SmartPointer Usage="Minimal">&amp;_Ptr-&gt;_Myval,na</SmartPointer>
+  </Type>
+
+  <Type Name="std::atomic&lt;*&gt;">
+      <DisplayString>{*($T1 *)&amp;_Storage._Value}</DisplayString>
+  </Type>
+</AutoVisualizer>

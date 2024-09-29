@@ -1,0 +1,24 @@
+load("//toolchain/tests/sanitizers:sanitizer_test.bzl", "sanitizer_test")
+
+# Expected output example
+# ==================
+# =15==WARNING: MemorySanitizer: use-of-uninitialized-value
+#     #0 0x2ce20a in main (bazel/bazel_user_root/fff4f35a9591257e13578c09f3d662aa/execroot/__main__/bazel-out/k8-fastbuild/bin/toolchain/tests/memory_sanitizer_stack_trace/intentional_unitialized_usage+0x2ce20a)
+#     #1 0x7f2dfea5bb96 in __libc_start_main /build/glibc-OTsEL5/glibc-2.27/csu/../csu/libc-start.c:310
+#     #2 0x255029 in _start (bazel/bazel_user_root/fff4f35a9591257e13578c09f3d662aa/execroot/__main__/bazel-out/k8-fastbuild/bin/toolchain/tests/memory_sanitizer_stack_trace/intentional_unitialized_usage+0x255029)
+
+# SUMMARY: MemorySanitizer: use-of-uninitialized-value (bazel/bazel_user_root/fff4f35a9591257e13578c09f3d662aa/execroot/__main__/bazel-out/k8-fastbuild/bin/toolchain/tests/memory_sanitizer_stack_trace/intentional_unitialized_usage+0x2ce20a) in main
+sanitizer_test(
+    name = "memory",
+    executable_cpp_sources = ["intentional_uninitialized_usage.cpp"],
+    expected_errors = [
+        "in\\ main",
+    ],
+    sanitizers = [
+        "-address_sanitizer",
+        "-undefined_behavior_sanitizer",
+        "memory_sanitizer",
+        "-thread_sanitizer",
+    ],
+    target_compatible_with = ["//toolchain/platforms:is_linux"],
+)

@@ -1,0 +1,41 @@
+load("//toolchain/tests/sanitizers:sanitizer_test.bzl", "sanitizer_test")
+
+# Verify that when "fuzzer-no-link" is defined we hit the deadly signal abort
+sanitizer_test(
+    name = "basic_fuzzer_with_fuzzer_no_link",
+    executable_cpp_sources = ["basic_fuzzer.cpp"],
+    expected_errors = [
+        "deadly signal",
+    ],
+    # Specifically exclude other sanitizers so this test works with all targets and those configs
+    sanitizers =
+        [
+            "address_sanitizer",
+            "-undefined_behavior_sanitizer",
+            "-memory_sanitizer",
+            "-thread_sanitizer",
+            "fuzzer",
+            "fuzzer-no-link",
+        ],
+    target_compatible_with = ["@//toolchain/platforms:is_posix"],
+)
+
+# Verify that when "fuzzer-no-link" is not defined we hit a buffer overflow instead
+sanitizer_test(
+    name = "basic_fuzzer_without_fuzzer_no_link",
+    executable_cpp_sources = ["basic_fuzzer.cpp"],
+    expected_errors = [
+        "heap-buffer-overflow",
+    ],
+    # Specifically exclude other sanitizers so this test works with all targets and those configs
+    sanitizers =
+        [
+            "address_sanitizer",
+            "-undefined_behavior_sanitizer",
+            "-memory_sanitizer",
+            "-thread_sanitizer",
+            "fuzzer",
+            "-fuzzer-no-link",  # Don't define FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+        ],
+    target_compatible_with = ["@//toolchain/platforms:is_posix"],
+)

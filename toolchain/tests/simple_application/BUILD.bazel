@@ -1,0 +1,46 @@
+# This is a small C++ "Hello World" application to easily test the C++ toolchain
+
+load("@bazel_skylib//rules:native_binary.bzl", "native_test")
+load("//toolchain/rules:universal_binary.bzl", "universal_binary")
+
+# Statically linked binary for test and for universal binary
+cc_binary(
+    name = "simple_application_static",
+    srcs = ["main.cpp"],
+    linkstatic = True,
+    visibility = ["//:__pkg__"],
+)
+
+# Test for statically linked binary using the existing binary from above
+native_test(
+    name = "simple_application_static_test",
+    src = ":simple_application_static",
+    out = "simple_application_static_test",
+    visibility = ["//:__pkg__"],
+)
+
+# Test for dynamically linked binary, built as part of the rule
+cc_test(
+    name = "simple_application_link_dynamic",
+    srcs = ["main.cpp"],
+    linkstatic = False,
+    tags = ["manual"],
+    visibility = ["//:__pkg__"],
+)
+
+# Universal binary using the statically linked binary
+universal_binary(
+    name = "simple_application_universal",
+    dep = ":simple_application_static",
+    output_prefix = "universal/",
+    target_compatible_with = ["@platforms//os:osx"],
+)
+
+# Test for statically linked binary
+native_test(
+    name = "simple_application_universal_test",
+    src = ":simple_application_universal",
+    out = "simple_application_universal_test",
+    target_compatible_with = ["@platforms//os:osx"],
+    visibility = ["//:__pkg__"],
+)

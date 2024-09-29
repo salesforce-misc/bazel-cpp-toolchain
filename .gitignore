@@ -1,0 +1,15 @@
+bazel-*
+.vscode/*
+thirdparty/macos_sdk/*
+thirdparty/macos_cmdtools/*
+
+!thirdparty/macos_sdk/WORKSPACE
+!thirdparty/macos_sdk/BUILD.bazel
+!thirdparty/macos_sdk/download_and_extract.sh
+!thirdparty/macos_cmdtools/WORKSPACE
+!thirdparty/macos_cmdtools/BUILD.bazel
+!thirdparty/macos_cmdtools/extract.sh
+
+.DS_Store
+
+bazelisk-windows-amd64.exe

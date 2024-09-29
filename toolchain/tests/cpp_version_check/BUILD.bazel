@@ -1,0 +1,38 @@
+# For values of __cplusplus see https://en.cppreference.com/w/cpp/preprocessor/replace#Predefined_macros
+
+cc_test(
+    name = "cpp_version_check_cpp11",
+    srcs = ["main.cpp"],
+    features = ["c++11"],
+    linkstatic = True,
+    local_defines = ["EXPECTED_CPP_VERSION=201103L"],
+    # MSVC Compiler + Runtime don’t support explicit C++11 (even with clang-cl)
+    target_compatible_with = ["@//toolchain/platforms:is_posix"],
+    visibility = ["//:__pkg__"],
+)
+
+cc_test(
+    name = "cpp_version_check_cpp14",
+    srcs = ["main.cpp"],
+    features = ["c++14"],
+    linkstatic = True,
+    local_defines = ["EXPECTED_CPP_VERSION=201402L"],
+    visibility = ["//:__pkg__"],
+)
+
+cc_test(
+    name = "cpp_version_check_cpp23",
+    srcs = ["main.cpp"],
+    features = ["c++23"],
+    linkstatic = True,
+    local_defines = ["EXPECTED_CPP_VERSION=202302L"],
+    visibility = ["//:__pkg__"],
+)
+
+cc_test(
+    name = "cpp_version_check_default",
+    srcs = ["main.cpp"],
+    linkstatic = True,
+    local_defines = ["EXPECTED_CPP_VERSION=202302L"],
+    visibility = ["//:__pkg__"],
+)

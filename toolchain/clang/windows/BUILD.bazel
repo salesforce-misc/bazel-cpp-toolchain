@@ -1,0 +1,15 @@
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+
+# Copy the file to the output so that the resource compiler puts the
+# generated resource right next to it in the output directory
+copy_file(
+    name = "manifest_resource",
+    src = ":manifest_resource.rc",
+    out = "manifest_resource_copy.rc",
+)
+
+filegroup(
+    name = "windows_enable_pretty_printing",
+    srcs = ["hyper.natvis"],
+    visibility = ["//visibility:public"],
+)

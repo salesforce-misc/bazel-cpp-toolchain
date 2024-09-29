@@ -1,0 +1,41 @@
+load("//toolchain/tests/sanitizers:sanitizer_test.bzl", "sanitizer_test")
+
+# Expected output example
+# ==================
+# WARNING: ThreadSanitizer: data race (pid=15)
+#   Write of size 4 at 0x000000d1e1b8 by thread T2:
+#     #0 Thread2(void*) <null> (intentional_data_race+0x2e9319)
+
+#   Previous write of size 4 at 0x000000d1e1b8 by thread T1:
+#     #0 Thread1(void*) <null> (intentional_data_race+0x2e92b9)
+
+#   Location is global 'Global' of size 4 at 0x000000d1e1b8 (intentional_data_race+0x000000d1e1b8)
+
+#   Thread T2 (tid=18, running) created by main thread at:
+#     #0 pthread_create <null> (intentional_data_race+0x25a80b)
+#     #1 main <null> (intentional_data_race+0x2e9386)
+
+#   Thread T1 (tid=17, finished) created by main thread at:
+#     #0 pthread_create <null> (intentional_data_race+0x25a80b)
+#     #1 main <null> (intentional_data_race+0x2e936b)
+
+# SUMMARY: ThreadSanitizer: data race (bazel/bazel_user_root/fff4f35a9591257e13578c09f3d662aa/execroot/__main__/bazel-out/k8-fastbuild/bin/toolchain/tests/sanitizers/thread/intentional_data_race+0x2e9319) in Thread2(void*)
+# ==================
+# ThreadSanitizer: reported 1 warnings
+sanitizer_test(
+    name = "thread",
+    executable_cpp_sources = ["intentional_data_race.cpp"],
+    expected_errors = [
+        "#0 pthread_create",
+        "#[0-9a-fA-F]\\ main",
+    ],
+    # Specifically exclude other sanitizers so this test works with all targets and those configs
+    sanitizers =
+        [
+            "-address_sanitizer",
+            "-undefined_behavior_sanitizer",
+            "-memory_sanitizer",
+            "thread_sanitizer",
+        ],
+    target_compatible_with = ["@//toolchain/platforms:is_posix"],
+)

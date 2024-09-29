@@ -1,0 +1,30 @@
+load("@rules_pkg//pkg:pkg.bzl", "pkg_zip")
+load("@rules_pkg//pkg:mappings.bzl", "strip_prefix")
+
+cc_test(
+    name = "application_with_static_library",
+    srcs = ["main.cpp"],
+    linkstatic = True,
+    visibility = ["//:__pkg__"],
+    deps = ["//toolchain/tests/simple_library"],
+)
+
+cc_test(
+    name = "application_with_shared_library",
+    srcs = ["main.cpp"],
+    linkstatic = False,
+    tags = ["manual"],
+    visibility = ["//:__pkg__"],
+    deps = ["//toolchain/tests/simple_library"],
+)
+
+pkg_zip(
+    name = "example-package",
+    srcs = [
+        ":application_with_shared_library",
+    ],
+    package_file_name = "example-package-{os}-{architecture}-{build_type}.zip",
+    package_variables = "//toolchain/platforms:default_zip_variables",
+    strip_prefix = strip_prefix.from_pkg(),
+    visibility = ["//scripts:__subpackages__"],
+)

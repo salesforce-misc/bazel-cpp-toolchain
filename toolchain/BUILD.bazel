@@ -1,0 +1,442 @@
+load("@bazel_tools//tools/cpp:cc_flags_supplier.bzl", "cc_flags_supplier")
+load("@rules_cc//cc:defs.bzl", "cc_toolchain", "cc_toolchain_suite")
+load("//toolchain:clang/darwin/clang_darwin_toolchain_config.bzl", "darwin_toolchain_config")
+load("//toolchain:clang/darwin/platform_constants.bzl", "MACOS_VERSION_MIN")
+load("//toolchain:clang/linux/clang_linux_toolchain_config.bzl", "linux_toolchain_config")
+load("//toolchain/clang/windows:cc_toolchain_config.bzl", "windows_clang_toolchain_config")
+load("//toolchain/helper:platform_helpers.bzl", "X86_64_TOOLCHAIN_DEFAULT_INSTRUCTION_SET_EXTENSIONS", "X86_64_TOOLCHAIN_SUPPORTED_INSTRUCTION_SET_EXTENSIONS")
+
+cc_flags_supplier(
+    name = "cc_flags",
+    visibility = ["//visibility:public"],
+)
+
+toolchain(
+    name = "cc-toolchain-clang-windows-x64-x64",
+    exec_compatible_with = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:windows",
+    ],
+    tags = ["manual"],
+    target_compatible_with = [
+        "@platforms//cpu:x86_64",
+    ],
+    toolchain = "clang_x64",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+toolchain(
+    name = "cc-toolchain-clang-linux-x64-x64",
+    exec_compatible_with = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ],
+    tags = ["manual"],
+    target_compatible_with = [
+        "@platforms//cpu:x86_64",
+    ],
+    toolchain = "clang_x64",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+toolchain(
+    name = "cc-toolchain-clang-macos-any-x64",
+    exec_compatible_with = [
+        "@platforms//os:macos",
+    ],
+    tags = ["manual"],
+    target_compatible_with = [
+        "@platforms//cpu:x86_64",
+    ],
+    toolchain = "clang_x64",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+toolchain(
+    name = "cc-toolchain-clang-macos-any-arm",
+    exec_compatible_with = [
+        "@platforms//os:macos",
+    ],
+    tags = ["manual"],
+    target_compatible_with = [
+        "@platforms//cpu:aarch64",
+    ],
+    toolchain = "clang_arm",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+## Platform specific toolchain suites
+
+# The platform specific toolchain suites are only used to fix problems with the legacy crosstool support when
+# using BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN to disable platform auto detection.
+# We should be able to get rid of these definitions as soon as the old crosstool support is removed from Bazel
+# entirely
+# We use per platform toolchain suites to prevent downloading unnecessary files on the specific OS
+# The respective toolchain suites are set via the --crosstool_top commandline flag by our bzl.py wrapper
+
+cc_toolchain_suite(
+    name = "clang_toolchain_suite",
+    toolchains = {
+        "darwin": ":clang_x64",
+        "darwin_aarch64": ":clang_arm",
+        "darwin_arm64": ":clang_arm",
+        "k8": ":clang_x64",
+        "x64_windows": ":clang_x64",
+    },
+)
+
+filegroup(
+    name = "hermetic_default_defines",
+    srcs = ["clang/hermetic_default_defines.h"],
+)
+
+# ---------------------------------------------------------------------------
+# Toolchain declarations
+# ---------------------------------------------------------------------------
+
+# All toolchains and toolchain configurations are annotated with the tag 'manual' to prevent downloading unnecessary
+# dependencies on all platforms.
+
+darwin_toolchain_config(
+    name = "clang_darwin_x64_toolchain_config",
+    ar = "@clang_darwin//:ar",
+    clang = "@clang_darwin//:clang",
+    default_instruction_set_extensions = X86_64_TOOLCHAIN_DEFAULT_INSTRUCTION_SET_EXTENSIONS,
+    ld = "@clang_darwin//:ld",
+    macosx_version_min = MACOS_VERSION_MIN,
+    sdk_version = "10.14",
+    strip = "@clang_darwin//:ld",
+    supported_instruction_set_extensions = X86_64_TOOLCHAIN_SUPPORTED_INSTRUCTION_SET_EXTENSIONS,
+    sysroot = "@macos_sdk",
+    tags = ["manual"],
+    target_architecture_triple = "x86_64-apple-macosx",
+    target_base_cpu = "x86-64",
+    # Mark target incompatible on other OS to avoid downloading dependencies
+    target_compatible_with = ["@platforms//os:osx"],
+)
+
+darwin_toolchain_config(
+    name = "clang_darwin_arm_toolchain_config",
+    ar = "@clang_darwin//:ar",
+    clang = "@clang_darwin//:clang",
+    ld = "@clang_darwin//:ld",
+    macosx_version_min = "11.0.0",  # lowest macOS version with ARM
+    sdk_version = "10.14",
+    strip = "@clang_darwin//:ld",
+    sysroot = "@macos_sdk",
+    tags = ["manual"],
+    target_architecture_triple = "arm64-apple-macos",
+    # Mark target incompatible on other OS to avoid downloading dependencies
+    target_compatible_with = ["@platforms//os:osx"],
+)
+
+linux_toolchain_config(
+    name = "clang_linux_x64_toolchain_config",
+    ar = "@clang_linux//:ar",
+    clang = "@clang_linux//:clang",
+    default_instruction_set_extensions = X86_64_TOOLCHAIN_DEFAULT_INSTRUCTION_SET_EXTENSIONS,
+    ld = "@clang_linux//:ld",
+    llvm_dwp = "clang/linux/wrapper_llvm_dwp.sh",
+    strip = "@clang_linux//:strip",
+    supported_instruction_set_extensions = X86_64_TOOLCHAIN_SUPPORTED_INSTRUCTION_SET_EXTENSIONS,
+    sysroot = "@sysroot_linux//:all_files",
+    tags = ["manual"],
+    target_architecture_triple = "x86_64-unknown-linux-gnu",
+    target_base_cpu = "x86-64",
+    # Mark target incompatible on other OS to avoid downloading dependencies
+    target_compatible_with = ["@platforms//os:linux"],
+)
+
+windows_clang_toolchain_config(
+    name = "clang_windows_x64_toolchain_config",
+    # defines the clang cl.exe compatible compiler frontend
+    clang_cl = "@clang_windows//:clang_cl",
+    default_instruction_set_extensions = X86_64_TOOLCHAIN_DEFAULT_INSTRUCTION_SET_EXTENSIONS,
+    # defines the lld link.exe compatible linker frontend
+    lld_link = "@clang_windows//:lld_link",
+    # defines clangs lib.exe compatible windows archiver
+    llvm_lib = "@clang_windows//:llvm_lib",
+    supported_instruction_set_extensions = X86_64_TOOLCHAIN_SUPPORTED_INSTRUCTION_SET_EXTENSIONS,
+    tags = ["manual"],
+    target_architecture_triple = "x86_64-pc-windows-msvc",
+    target_base_cpu = "x86-64",
+    # Mark target incompatible on other OS to avoid downloading dependencies
+    target_compatible_with = ["@platforms//os:windows"],
+)
+
+filegroup(
+    name = "clang_toolchain_all_files",
+    srcs = select({
+        "//toolchain/platforms:is_macos": [
+            "clang/darwin/wrapper-scripts/cc-wrapper.sh",
+            ":hermetic_default_defines",
+            "@clang_darwin//:all_components",
+            "@macos_cmdtools//:ld",
+            "@macos_cmdtools//:libraries",
+            "@macos_sdk",
+        ],
+        "//toolchain/platforms:is_linux": [
+            ":hermetic_default_defines",
+            "@clang_linux//:all_components",
+            "@sysroot_linux//:all_files",
+        ],
+        "//toolchain/platforms:is_windows": ["@clang_windows//:all_toolchain_components"],
+    }),
+)
+
+filegroup(
+    name = "clang_toolchain_ar_files",
+    srcs = select({
+        "//toolchain/platforms:is_macos": [
+            "clang/darwin/wrapper-scripts/cc-wrapper.sh",
+            "@clang_darwin//:linker_components",
+            "@macos_sdk",
+        ],
+        "//toolchain/platforms:is_linux": [
+            "@clang_linux//:linker_components",
+            "@sysroot_linux//:all_files",
+        ],
+        "//toolchain/platforms:is_windows": [],
+    }),
+)
+
+filegroup(
+    name = "clang_toolchain_as_files",
+    srcs = select({
+        "//toolchain/platforms:is_macos": [
+            "clang/darwin/wrapper-scripts/cc-wrapper.sh",
+            ":hermetic_default_defines",
+            "@clang_darwin//:linker_components",
+            "@macos_sdk",
+        ],
+        "//toolchain/platforms:is_linux": [
+            "@clang_linux//:linker_components",
+            "@sysroot_linux//:all_files",
+        ],
+        "//toolchain/platforms:is_windows": [],
+    }),
+)
+
+filegroup(
+    name = "clang_toolchain_compiler_files",
+    srcs = select({
+        "//toolchain/platforms:is_macos": [
+            "clang/darwin/wrapper-scripts/cc-wrapper.sh",
+            ":hermetic_default_defines",
+            "@clang_darwin//:compiler_components",
+            "@macos_sdk",
+        ],
+        "//toolchain/platforms:is_linux": [
+            ":hermetic_default_defines",
+            "@clang_linux//:compiler_components",
+            "@sysroot_linux//:all_files",
+        ],
+        "//toolchain/platforms:is_windows": [
+            "@clang_windows//:clang_cl",
+            "@clang_windows//:compiler_specific_headers",
+            "@msvc//:msvc_headers",
+            "@windows_sdk//:windows_sdk_shared_headers",
+            "@windows_sdk//:windows_sdk_ucrt_headers",
+            "@windows_sdk//:windows_sdk_um_headers",
+            "@windows_sdk//:windows_sdk_winrt_headers",
+        ],
+    }),
+)
+
+filegroup(
+    name = "clang_toolchain_clang_tidy_files",
+    srcs = select({
+        "//toolchain/platforms:is_macos": ["@clang_darwin//:clang_tidy"],
+        "//toolchain/platforms:is_linux": ["@clang_linux//:clang_tidy"],
+        "//toolchain/platforms:is_windows": ["@clang_windows//:clang_tidy"],
+    }),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "clang_toolchain_clang_apply_replacements_files",
+    srcs = select({
+        "//toolchain/platforms:is_macos": ["@clang_darwin//:clang_apply_replacements"],
+        "//toolchain/platforms:is_linux": ["@clang_linux//:clang_apply_replacements"],
+        "//toolchain/platforms:is_windows": ["@clang_windows//:clang_apply_replacements"],
+    }),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "clang_toolchain_dynamic_runtime_lib",
+    srcs = select({
+        "//toolchain/platforms:is_macos": ["@clang_darwin//:cpp_dynamic_runtime_libraries"],
+        "//toolchain/platforms:is_linux": ["@clang_linux//:cpp_dynamic_runtime_libraries"],
+        # empty here because we windows linking is more sophisticated than posx.
+        # Different debug/release versions and in addition you need interface libraries to link against dynamic libraries.
+        "//toolchain/platforms:is_windows": [],
+    }),
+)
+
+filegroup(
+    name = "clang_toolchain_linker_files",
+    srcs = select({
+        "//toolchain/platforms:is_macos": [
+            "clang/darwin/wrapper-scripts/cc-wrapper.sh",
+            "@clang_darwin//:linker_components",
+            "@macos_cmdtools//:ld",
+            "@macos_cmdtools//:libraries",
+            "@macos_sdk",
+        ],
+        "//toolchain/platforms:is_linux": [
+            "@clang_linux//:linker_components",
+            "@sysroot_linux//:all_files",
+        ],
+        "//toolchain/platforms:is_windows": [
+            # the link.exe compatible version of the lld linker
+            "@clang_windows//:lld_link",
+            # Below we list the different parts of the msvc runtime
+            # For each library we list four different versions of the same library
+            # The particular version of each library at link time is chosen depending on if we use static or dynamic linking
+            # or if we build debug or release versions
+            # The MSVC C-runtime library
+            "@msvc//:dynamic_no_debug_runtime_library_import_library",
+            "@msvc//:dynamic_debug_runtime_library_import_library",
+            "@msvc//:static_no_debug_runtime_library",
+            "@msvc//:static_debug_runtime_library",
+            # The vcruntime library contains Visual C++ CRT implementation-specific code,
+            # such as exception handling and debugging support, runtime checks and type information,
+            # implementation details and certain extended library functions.
+            # The vcruntime library is specific to the version of the compiler used.
+            "@msvc//:static_no_debug_vcruntime_library",
+            "@msvc//:static_debug_vcruntime_library",
+            "@msvc//:no_debug_vcruntime_import_library",
+            "@msvc//:debug_vcruntime_import_library",
+            # C++ Standard Library
+            "@msvc//:no_debug_static_cpp_standard_library",
+            "@msvc//:debug_static_cpp_standard_library",
+            "@msvc//:no_debug_dynamic_cpp_standard_library_import_library",
+            "@msvc//:debug_dynamic_cpp_standard_library_import_library",
+            # Concurrency Runtime, shipped via Visual Studio. Required for parallel containers and algorithms such as
+            # concurrency::parallel_for.
+            "@msvc//:static_no_debug_concurrent_library",
+            "@msvc//:static_debug_concurrent_library",
+            "@msvc//:dynamic_no_debug_concurrent_import_library",
+            "@msvc//:dynamic_debug_concurrent_import_library",
+            # For compatibility between product versions, the library OLDNAMES.LIB maps old names to new names.
+            # For instance, open maps to _open.
+            "@msvc//:oldnames_lib",
+            # The Universal CRT (UCRT) contains the functions and globals exported by
+            # the standard C99 C Run-time Library (CRT) library
+            "@windows_sdk//:no_debug_static_ucrt",
+            "@windows_sdk//:debug_static_ucrt",
+            "//toolchain/clang/windows:windows_enable_pretty_printing",
+        ],
+    }),
+)
+
+filegroup(
+    name = "clang_toolchain_objcopy_files",
+    srcs = select({
+        "//toolchain/platforms:is_macos": ["@clang_darwin//:objcopy"],
+        "//toolchain/platforms:is_linux": ["@clang_linux//:objcopy"],
+        "//toolchain/platforms:is_windows": [],
+    }),
+)
+
+filegroup(
+    name = "clang_toolchain_dwp_files",
+    srcs = select({
+        "//toolchain/platforms:is_macos": ["@clang_darwin//:dwp"],
+        "//toolchain/platforms:is_linux": [
+            ":clang/linux/wrapper_llvm_dwp.sh",
+            "@clang_linux//:dwp",
+        ],
+        "//toolchain/platforms:is_windows": [],
+    }),
+)
+
+filegroup(
+    name = "clang_toolchain_strip_files",
+    srcs = select({
+        "//toolchain/platforms:is_macos": ["@macos_cmdtools//:strip"],
+        # `strip` is a symlink to `objcopy`, thus we also need `objcopy` as a runfile.
+        "//toolchain/platforms:is_linux": [
+            "@clang_linux//:lib",
+            "@clang_linux//:objcopy",
+            "@clang_linux//:strip",
+        ],
+        "//toolchain/platforms:is_windows": [],
+    }),
+)
+
+filegroup(
+    name = "clang_toolchain_static_runtime_lib",
+    srcs = select({
+        "//toolchain/platforms:is_macos": ["@clang_darwin//:cpp_static_runtime_libraries"],
+        "//toolchain/platforms:is_linux": ["@clang_linux//:cpp_static_runtime_libraries"],
+        "//toolchain/platforms:is_windows": [],
+    }),
+)
+
+cc_toolchain(
+    name = "clang_x64",
+    all_files = ":clang_toolchain_all_files",
+    ar_files = ":clang_toolchain_ar_files",
+    as_files = ":clang_toolchain_as_files",
+    compiler_files = ":clang_toolchain_compiler_files",
+    coverage_files = "//:empty_filegroup",
+    dwp_files = ":clang_toolchain_dwp_files",
+    dynamic_runtime_lib = ":clang_toolchain_dynamic_runtime_lib",
+    linker_files = ":clang_toolchain_linker_files",
+    objcopy_files = ":clang_toolchain_objcopy_files",
+    static_runtime_lib = ":clang_toolchain_static_runtime_lib",
+    strip_files = ":clang_toolchain_strip_files",
+    supports_param_files = select({
+        "//toolchain/platforms:is_macos": 0,
+        "//toolchain/platforms:is_linux": 1,
+        "//toolchain/platforms:is_windows": 1,
+    }),
+    tags = [
+        "manual",
+    ],
+    toolchain_config = select({
+        "//toolchain/platforms:is_macos": ":clang_darwin_x64_toolchain_config",
+        "//toolchain/platforms:is_linux": ":clang_linux_x64_toolchain_config",
+        "//toolchain/platforms:is_windows": ":clang_windows_x64_toolchain_config",
+    }),
+    toolchain_identifier = "clang_x64",
+)
+
+cc_toolchain(
+    name = "clang_arm",
+    all_files = ":clang_toolchain_all_files",
+    ar_files = ":clang_toolchain_ar_files",
+    as_files = ":clang_toolchain_as_files",
+    compiler_files = ":clang_toolchain_compiler_files",
+    coverage_files = "//:empty_filegroup",
+    dwp_files = ":clang_toolchain_dwp_files",
+    dynamic_runtime_lib = ":clang_toolchain_dynamic_runtime_lib",
+    linker_files = ":clang_toolchain_linker_files",
+    objcopy_files = ":clang_toolchain_objcopy_files",
+    static_runtime_lib = ":clang_toolchain_static_runtime_lib",
+    strip_files = ":clang_toolchain_strip_files",
+    supports_param_files = select({
+        "//toolchain/platforms:is_macos": 0,
+        "//toolchain/platforms:is_linux": 1,
+        "//toolchain/platforms:is_windows": 1,
+    }),
+    tags = [
+        "manual",
+    ],
+    toolchain_config = select({
+        "//toolchain/platforms:is_macos": ":clang_darwin_arm_toolchain_config",
+        # The clang_arm toolchain is not yet supported on Linux and Windows,
+        # but it can't be hidden and therefore will be loaded from Bazel.
+        # Since the toolchain config can't be empty, we simply provide
+        # the x64 toolchain config so Bazel is happy.
+        "//toolchain/platforms:is_linux": ":clang_linux_x64_toolchain_config",
+        "//toolchain/platforms:is_windows": ":clang_windows_x64_toolchain_config",
+    }),
+    toolchain_identifier = "clang_arm",
+)

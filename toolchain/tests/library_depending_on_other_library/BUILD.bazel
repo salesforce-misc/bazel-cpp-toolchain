@@ -1,0 +1,13 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "library_depending_on_other_library",
+    srcs = ["hello_world.cpp"],
+    hdrs = ["hello_world.hpp"],
+    strip_include_prefix = "/toolchain/tests",
+    visibility = [
+        "//:__pkg__",
+        "//toolchain/tests:__subpackages__",
+    ],
+    deps = ["//toolchain/tests/simple_library"],
+)

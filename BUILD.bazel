@@ -1,0 +1,5 @@
+filegroup(
+    name = "empty_filegroup",
+    srcs = [],
+    visibility = ["//visibility:public"],
+)

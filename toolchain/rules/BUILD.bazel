@@ -1,0 +1,57 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+
+# Helper target with the aim to access the requested operating system name (windows, linux or darwin) inside rule implementations.
+#
+# This alias is used as a hidden parameter in the os_information rule.
+# A global instance of the os_information is available at //toolchain/aliases:os
+# and allows other rule implementations to conveniently access the requested OS information.
+alias(
+    name = "os_condition_alias",
+    actual = select({
+        "//toolchain/platforms:is_macos": "//toolchain/platforms:is_macos",
+        "//toolchain/platforms:is_linux": "//toolchain/platforms:is_linux",
+        "//toolchain/platforms:is_windows": "//toolchain/platforms:is_windows",
+    }),
+    visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "generatesymbolfile",
+    srcs = ["generatesymbolfile.py"],
+    main = "generatesymbolfile.py",
+    python_version = "PY3",
+    srcs_version = "PY3",
+    visibility = ["//visibility:public"],
+)
+
+# A helper alias that is required to resolve the proper dsymutils on all platforms
+alias(
+    name = "platformspecific_dsym_utils",
+    actual = select({
+        "//toolchain/platforms:is_macos": "@clang_darwin//:dsymutil",
+        "//toolchain/platforms:is_linux": "@clang_linux//:dsymutil",
+        "//toolchain/platforms:is_windows": "@clang_windows//:dsymutil",
+    }),
+    visibility = ["//visibility:public"],
+)
+
+# These alias are required to resolve the proper tools for the rc_rules on all platforms
+alias(
+    name = "llvm_rc",
+    actual = select({
+        "//toolchain/platforms:is_macos": "@clang_darwin//:llvm_rc",
+        "//toolchain/platforms:is_linux": "@clang_linux//:llvm_rc",
+        "//toolchain/platforms:is_windows": "@clang_windows//:llvm_rc",
+    }),
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "llvm_cvtres",
+    actual = select({
+        "//toolchain/platforms:is_macos": "@clang_darwin//:llvm_cvtres",
+        "//toolchain/platforms:is_linux": "@clang_linux//:llvm_cvtres",
+        "//toolchain/platforms:is_windows": "@clang_windows//:llvm_cvtres",
+    }),
+    visibility = ["//visibility:public"],
+)

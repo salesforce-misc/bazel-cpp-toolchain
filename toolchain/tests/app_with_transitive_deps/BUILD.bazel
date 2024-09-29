@@ -1,0 +1,18 @@
+load("//toolchain/rules:dsym.bzl", "dsym")
+
+cc_test(
+    name = "app_with_transitive_static_deps",
+    srcs = ["main.cpp"],
+    linkstatic = True,
+    visibility = ["//:__pkg__"],
+    deps = ["//toolchain/tests/library_depending_on_other_library"],
+)
+
+cc_test(
+    name = "app_with_transitive_shared_deps",
+    srcs = ["main.cpp"],
+    linkstatic = False,
+    tags = ["manual"],
+    visibility = ["//:__pkg__"],
+    deps = ["//toolchain/tests/library_depending_on_other_library"],
+)

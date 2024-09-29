@@ -1,0 +1,30 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "simple_gtest_dynamic_linking",
+    size = "small",
+    srcs = [
+        "simple_gtest_main.cpp",
+        "simple_gtest_tests.cpp",
+    ],
+    linkstatic = 0,
+    tags = ["manual"],
+    visibility = ["//:__pkg__"],
+    deps = [
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "simple_gtest_static_linking",
+    size = "small",
+    srcs = [
+        "simple_gtest_main.cpp",
+        "simple_gtest_tests.cpp",
+    ],
+    linkstatic = 1,
+    visibility = ["//:__pkg__"],
+    deps = [
+        "@googletest//:gtest",
+    ],
+)

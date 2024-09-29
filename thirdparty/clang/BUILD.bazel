@@ -1,0 +1,30 @@
+alias(
+    name = "all_files",
+    actual = select({
+        "@//toolchain/platforms:is_windows": "@clang_windows//:all_files",
+        "@//toolchain/platforms:is_linux": "@clang_linux//:all_files",
+        "@//toolchain/platforms:is_macos": "@clang_darwin//:all_files",
+    }),
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "clang",
+    actual = select({
+        "@//toolchain/platforms:is_linux": "@clang_linux//:bin_aliases",
+        "@//toolchain/platforms:is_macos": "@clang_darwin//:bin_aliases",
+        "@//toolchain/platforms:is_windows": "@clang_windows//:clang",
+    }),
+    visibility = ["//visibility:public"],
+)
+
+# Sanitizer support files, e.g. symbolizer for crash reports
+alias(
+    name = "sanitizer_support",
+    actual = select({
+        "@//toolchain/platforms:is_linux": "@clang_linux//:sanitizer_support",
+        "@//toolchain/platforms:is_macos": "@clang_darwin//:sanitizer_support",
+        "@//toolchain/platforms:is_windows": "@clang_windows//:sanitizer_support",
+    }),
+    visibility = ["//visibility:public"],
+)

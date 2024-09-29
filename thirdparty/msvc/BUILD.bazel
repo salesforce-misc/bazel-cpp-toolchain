@@ -1,0 +1,160 @@
+filegroup(
+    name = "all_files",
+    srcs = glob(["**/*"]),
+    visibility = ["//visibility:public"],
+)
+
+# The code that initializes the CRT is in one of several libraries,
+# based on whether the CRT library is statically or dynamically linked,
+# or native, managed, or mixed code.
+# This code handles CRT startup, internal per-thread data initialization,
+# and termination. It is specific to the version of the compiler used.
+# This library is always statically linked, even when using a dynamically linked UCRT.
+# Below are the libraries that implement CRT initialization and termination.
+
+filegroup(
+    name = "dynamic_no_debug_runtime_library_import_library",
+    srcs = ["lib/x64/msvcrt.lib"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "dynamic_debug_runtime_library_import_library",
+    srcs = ["lib/x64/msvcrtd.lib"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "static_no_debug_runtime_library",
+    srcs = ["lib/x64/libcmt.lib"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "static_debug_runtime_library",
+    srcs = ["lib/x64/libcmtd.lib"],
+    visibility = ["//visibility:public"],
+)
+
+# Concurrency Runtime, shipped via Visual Studio. Required for parallel containers and algorithms such as
+# concurrency::parallel_for. Also, the STL requires this DLL on Windows XP to power synchronization primitives,
+# because Windows XP does not have condition variables.
+################################ Concurrent Library ############################
+
+filegroup(
+    name = "dynamic_no_debug_concurrent_import_library",
+    srcs = ["lib/x64/concrt.lib"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "dynamic_debug_concurrent_import_library",
+    srcs = ["lib/x64/concrtd.lib"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "static_no_debug_concurrent_library",
+    srcs = ["lib/x64/libconcrt.lib"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "static_debug_concurrent_library",
+    srcs = ["lib/x64/libconcrtd.lib"],
+    visibility = ["//visibility:public"],
+)
+
+# The vcruntime library contains Visual C++ CRT implementation-specific code,
+# such as exception handling and debugging support, runtime checks and type information,
+# implementation details and certain extended library functions.
+# The vcruntime library is specific to the version of the compiler used.
+
+# Static vcruntime library
+# It corresponds to the /Mt compiler flag
+filegroup(
+    name = "static_no_debug_vcruntime_library",
+    srcs = ["lib/x64/libvcruntime.lib"],
+    visibility = ["//visibility:public"],
+)
+
+# Static debug vcruntime library
+# It corresponds to the /Mtd compiler flag
+filegroup(
+    name = "static_debug_vcruntime_library",
+    srcs = ["lib/x64/libvcruntimed.lib"],
+    visibility = ["//visibility:public"],
+)
+
+# DLL import library for the dynamic vcruntime library
+# It corresponds to the /MD compiler flag
+filegroup(
+    name = "no_debug_vcruntime_import_library",
+    srcs = ["lib/x64/vcruntime.lib"],
+    visibility = ["//visibility:public"],
+)
+
+# DLL import library for the debug dynamic vcruntime library
+# It corresponds to the /MDd compiler flag
+filegroup(
+    name = "debug_vcruntime_import_library",
+    srcs = ["lib/x64/vcruntimed.lib"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "msvc_headers",
+    srcs = glob(["include/**/*"]),
+    visibility = ["//visibility:public"],
+)
+
+# C++ Standard Library
+# When you build a release version of your project, one of the basic C run-time libraries
+# (libcmt.lib, msvcmrt.lib, msvcrt.lib) is linked by default, depending on the compiler option you choose
+# (multithreaded, DLL, /clr).
+# If you include one of the C++ Standard Library header files in your code, a C++ Standard Library will
+# be linked in automatically by Visual C++ at compile time.
+
+filegroup(
+    name = "no_debug_static_cpp_standard_library",
+    srcs = ["lib/x64/libcpmt.lib"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "debug_static_cpp_standard_library",
+    # The 1 is important as it corresponds to iterator debug level 1
+    # Explicitly selecting the specific libcpmtd will become obsolete
+    # as soon as we let the compiler frontend decide on the required library
+    srcs = ["lib/x64/libcpmtd1.lib"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "no_debug_dynamic_cpp_standard_library_import_library",
+    srcs = ["lib/x64/msvcprt.lib"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "debug_dynamic_cpp_standard_library_import_library",
+    srcs = ["lib/x64/msvcprtd.lib"],
+    visibility = ["//visibility:public"],
+)
+
+#################################################################################################
+
+# For compatibility between product versions, the library OLDNAMES.LIB maps old names to new names.
+# For instance, open maps to _open. You must explicitly link with OLDNAMES.LIB only when you compile
+# with the following combinations of command-line options: /link (linker-control), /NOD (no default-library search), and /Ze
+
+filegroup(
+    name = "oldnames_lib",
+    srcs = ["lib/x64/oldnames.lib"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "atl-imported-static-library",
+    static_library = "atlmfc/lib/x64/atls.lib",
+)

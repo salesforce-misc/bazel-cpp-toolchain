@@ -2,6 +2,7 @@
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("//toolchain/platforms:platform_with_config_setting.bzl", "platform_with_config_setting")
+load("//toolchain/platforms:package_variables.bzl", "package_variables")
 # If you want to use the os+arch platform defines in selects, use the "is_<>" config settings created by the macro
 
 package(default_visibility = ["//visibility:public"])

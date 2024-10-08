@@ -36,7 +36,7 @@ default_include_paths = [
 ]
 
 # clang resource directory, containing non-gnu headers and clang-specific libraries (part of the clang package)
-clang_resource_directory = "external/clang_windows/lib/clang/17"
+clang_resource_directory = "external/clang_windows/lib/clang/18"
 clang_c_includes = clang_resource_directory + "/include"
 
 # ===========================================================================

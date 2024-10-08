@@ -27,7 +27,7 @@ include_paths = [
 ]
 
 # clang resource directory, containing non-gnu headers and clang-specific libraries (part of the clang package)
-clang_resource_directory = "external/clang_darwin/lib/clang/17"
+clang_resource_directory = "external/clang_darwin/lib/clang/18"
 
 def create_platform_specific_link_flags(macosx_version_min, sdk_version):
     return [

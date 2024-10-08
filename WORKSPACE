@@ -25,6 +25,21 @@ load("@rules_python//python:repositories.bzl", "py_repositories")
 py_repositories()
 
 # -------------------------------------
+# rules_pkg
+
+http_archive(
+    name = "rules_pkg",
+    sha256 = "d20c951960ed77cb7b341c2a59488534e494d5ad1d30c4818c736d57772a9fef",
+    urls = [
+        "https://github.com/bazelbuild/rules_pkg/releases/download/1.0.1/rules_pkg-1.0.1.tar.gz",
+    ],
+)
+
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+
+rules_pkg_dependencies()
+
+# -------------------------------------
 # Linux Sysroot
 
 # The centos_sysroot depends on the python interpreter and the rpmfile pip package

@@ -30,7 +30,7 @@ include_paths = [
 ]
 
 # clang resource directory, containing non-gnu headers and clang-specific libraries (part of the clang package)
-clang_resource_directory = "external/clang_linux/lib/clang/17"
+clang_resource_directory = "external/clang_linux/lib/clang/18"
 clang_builtin_includes = clang_resource_directory + "/include"
 
 platform_specific_link_flags = [

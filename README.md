@@ -1,6 +1,6 @@
 # bazel-cpp-toolchain
 
-*Example repository for the [Utilizing Bazel for Cross-Platform and Cross-Architecture Compilation and Testing](https://sched.co/1h6SU) talk at [BazelCon 24](https://events.linuxfoundation.org/bazelcon/) by Axel Uhlig & Marcel Kost at Salesforce.*
+*Example repository for the [Utilizing Bazel for Cross-Platform and Cross-Architecture Compilation and Testing](https://sched.co/1h6SU) talk at [BazelCon 24](https://events.linuxfoundation.org/bazelcon/) by Axel Uhlig & Marcel Kost at Salesforce. ([Recording](https://www.youtube.com/watch?v=E3DCwQzRPJA))*
 
 This repository shows the setup of a fully hermetic [Bazel C++ Toolchain](https://bazel.build/docs/cc-toolchain-config-reference) and how it can be used to achieve cool things like multi-OS support, cross-compiling and creating macOS universal binaries just with native Bazel features. The code in this repository is not maintained.
 
